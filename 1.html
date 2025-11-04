@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Friendix.ai — Website</title>
+  <meta name="description" content="Friendix.ai — caring AI companions (Luvisa, The Coder, Life Coach, Assistant). Start a chat." />
+  <meta name="theme-color" content="#0b0611" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-dark: #0b0611;
+      --muted: rgba(255,255,255,0.66);
+      --card: rgba(255,255,255,0.03);
+      --glass-blur: 12px;
+      --accent-1: #ff6fa1;
+      --accent-2: #8b63e6;
+      --accent-gradient: linear-gradient(90deg,var(--accent-2),var(--accent-1));
+      --max-width: 1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:var(--bg-dark);color:#fff;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{max-width:var(--max-width);margin:0 auto;padding:28px 20px}
+
+    /* Background layers */
+    .bg-wrap{position:fixed;inset:0;z-index:-40;pointer-events:none;overflow:hidden}
+    .nebula {
+      position:absolute; inset:-30% -20%;
+      background:
+        radial-gradient(700px 360px at 12% 30%, rgba(255,111,161,0.14), transparent 16%),
+        radial-gradient(780px 420px at 82% 68%, rgba(139,99,230,0.16), transparent 18%),
+        linear-gradient(180deg, rgba(255,187,193,0.02), rgba(11,6,18,0.12));
+      filter: blur(38px) saturate(1.05);
+      transform-origin:center;
+      animation: nebFloat 26s ease-in-out infinite;
+    }
+    @keyframes nebFloat { 0%{ transform: translateY(0) scale(1);} 50%{ transform: translateY(-18px) scale(1.02);} 100%{ transform: translateY(8px) scale(1);} }
+    .texture { position:absolute;inset:0;background-image:url('https://i.imgur.com/9I0AweN.png');opacity:0.06;mix-blend-mode:screen;filter:blur(2px) }
+    canvas#starfieldCanvas{position:absolute;inset:0;z-index:-30;display:block}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(11,6,18,0.76),rgba(11,6,18,0.56));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+  .brand-title{font-weight:800;font-size:18px}
+    nav.links{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    nav.links a{color:var(--muted);padding:6px 8px;border-radius:8px}
+    nav.links a.active{background:rgba(255,255,255,0.03);color:#fff}
+    .cta{background:var(--accent-gradient);padding:10px 16px;border-radius:999px;font-weight:700;box-shadow:0 12px 36px rgba(139,99,230,0.08);color:white}
+
+    /* Hero */
+    .hero{min-height:72vh;display:flex;align-items:center}
+    .hero-grid{display:grid;grid-template-columns:1fr 480px;gap:36px;align-items:center;padding:48px 0}
+    .hero-title{font-size:clamp(28px,5vw,48px);line-height:1.02;font-weight:800;margin:0}
+    .hero-sub{margin-top:14px;color:var(--muted);max-width:60ch;font-weight:400}
+
+    /* Orbs + cards */
+    .orb-cluster{display:flex;flex-direction:column;gap:14px;align-items:center}
+    .companion-orb{width:120px;height:120px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:8px;background:var(--card);border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,0.6);transition:transform .24s;backdrop-filter:blur(var(--glass-blur))}
+    .companion-orb:hover{transform:translateY(-8px);cursor:pointer}
+    .grid-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 30px rgba(1,2,6,0.6);transition:transform .28s}
+    .card:hover{transform:translateY(-8px)}
+
+    /* carousel */
+    .carousel{position:relative;overflow:hidden;border-radius:14px}
+    .slides{display:flex;transition:transform .42s;touch-action:pan-y}
+    .slide{min-width:100%;padding:18px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
+    .dots{display:flex;gap:8px;justify-content:center;margin-top:12px}
+    .dot{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,0.14);cursor:pointer}
+    .dot.active{background:var(--accent-gradient);box-shadow:0 8px 20px rgba(139,99,230,0.12)}
+
+    /* layout helpers */
+    .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+    .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+
+    /* Footer */
+    footer{padding:24px 0;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02)}
+    .footer-links,a.social{color:var(--muted);margin-right:12px}
+
+    /* responsive */
+    @media (max-width:1000px){
+      .hero-grid{grid-template-columns:1fr}
+      .grid-cards{grid-template-columns:repeat(2,1fr)}
+      .test-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:640px){
+      .grid-cards{grid-template-columns:1fr}
+      .hero{padding-top:8px;padding-bottom:8px}
+      .orb-row{gap:10px}
+      .orb-img{width:56px;height:56px}
+      nav.links{gap:8px}
+    }
+
+    /* reveal */
+    .reveal{opacity:0;transform:translateY(12px);transition:all .72s cubic-bezier(.2,.9,.3,1)}
+    .reveal.in-view{opacity:1;transform:none}
+
+    /* small helper */
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-wrap" aria-hidden="true">
+    <div class="nebula" aria-hidden="true"></div>
+    <canvas id="starfieldCanvas" aria-hidden="true"></canvas>
+    <div class="texture" aria-hidden="true"></div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true" style="overflow:hidden;">
+        <img src="logo.png" alt="Friendix.ai Logo" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+
+        <div>
+          <div class="brand-title">Friendix.ai</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Your AI friend who cares</div>
+        </div>
+      </div>
+
+      <nav class="links" aria-label="Main navigation">
+        <a href="#companions" data-nav="companions">Companions</a>
+        <a href="#gallery" data-nav="gallery">Experience</a>
+        <a href="#how-it-works" data-nav="how-it-works">How it works</a>
+        <a href="https://friendix-ai.onrender.com" class="cta" data-nav="contact">Start Chatting</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main>
+    <section class="hero container">
+      <div class="hero-grid">
+        <div>
+          <h1 class="hero-title reveal">A caring companion for when you need one</h1>
+          <p class="hero-sub reveal">Luvisa listens with warmth and kindness. Choose a companion for coaching, coding help, reminders or a calm conversation — Friendix.ai supports you with empathy and safety.</p>
+
+          <div style="margin-top:20px" class="reveal">
+            <a class="cta" href="https://friendix-ai.onrender.com" target="_blank" rel="noopener">Start Chatting</a>
+            <a style="margin-left:12px;color:var(--muted)" href="#companions">Meet companions</a>
+          </div>
+
+          <div style="margin-top:18px;color:var(--muted)" class="reveal">Free to try · Privacy-first · Opt-in memory</div>
+        </div>
+
+        <aside class="orb-cluster reveal" aria-hidden="true">
+          <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+            <div style="display:flex;gap:16px" class="orb-row">
+              <div class="companion-orb" role="button" tabindex="0" aria-label="Luvisa">
+                <div style="width:64px;height:64px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.1)">
+                <img src="luvisa.png" alt="Luvisa" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+
+                <div style="font-weight:700">Luvisa</div>
+              </div>
+              <div class="companion-orb" role="button" tabindex="0" aria-label="The Coder">
+                <div style="width:64px;height:64px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.1)">
+                <img src="coder.png" alt="Luvisa" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+              <div style="font-weight:700">The Coder</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:16px" class="orb-row">
+              <div class="companion-orb" role="button" tabindex="0" aria-label="Life Coach">
+               <div style="width:64px;height:64px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.1)">
+                <img src="ass.png" alt="Luvisa" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+               <div style="font-weight:700">Life Coach</div>
+              </div>
+              <div class="companion-orb" role="button" tabindex="0" aria-label="Assistant">
+                <div style="width:64px;height:64px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.1)">
+                <img src="ass.png" alt="Luvisa" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+                <div style="font-weight:700">Assistant</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <a class="cta" href="#gallery">See the app</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- COMPANIONS -->
+    <section id="companions" style="padding-top:8px">
+      <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <h2 style="margin:0;font-size:20px;font-weight:800">Meet the Companions</h2>
+            <div class="muted" style="margin-top:6px">Unique personalities — start with Luvisa and explore more companions.</div>
+          </div>
+        </div>
+
+        <div class="grid-cards" style="margin-top:18px">
+          <div class="card reveal" tabindex="0" role="button" aria-label="Luvisa card">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
+            <img src="luvisa.png" alt="Lovisa" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+              <div>
+                <div style="font-weight:800">Luvisa <span style="color:#ff9eb8">♥</span></div>
+                <div class="muted" style="margin-top:6px">Warm emotional support, empathetic listening and gentle encouragement.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px"><a class="cta" href="https://friendix-ai.onrender.com" target="_blank">Start with Luvisa</a></div>
+          </div>
+
+          <div class="card reveal" tabindex="0" role="button" aria-label="Coder card">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#7dd3fc,#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:800;color:#042a3a">C</div>
+              <div>
+                <div style="font-weight:800">The Coder</div>
+                <div class="muted" style="margin-top:6px">Coding help, debugging tips and clear walkthroughs.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px"><button class="cta" onclick="alert('Join beta — coming soon')">Join beta</button></div>
+          </div>
+
+          <div class="card reveal" tabindex="0" role="button" aria-label="Life coach card">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#ffd6e0,#ff9eb8);display:flex;align-items:center;justify-content:center;font-weight:800;color:#3b1220">🧘</div>
+              <div>
+                <div style="font-weight:800">Life Coach</div>
+                <div class="muted" style="margin-top:6px">Habit prompts, mindfulness nudges and gentle routines.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px"><button class="cta" onclick="alert('Coming soon')">Coming soon</button></div>
+          </div>
+
+          <div class="card reveal" tabindex="0" role="button" aria-label="Assistant card">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#d8b4fe,#8b63e6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#2e0859">A</div>
+              <div>
+                <div style="font-weight:800">Assistant</div>
+                <div class="muted" style="margin-top:6px">Task management, reminders and quick drafting help.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px"><button class="cta" onclick="alert('Coming soon')">Coming soon</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IN-APP EXPERIENCE: Horizontal Swipe Carousel -->
+    <section id="gallery" style="padding:48px 0">
+      <div class="container gallery-wrap reveal">
+        <h2 style="font-size:22px;font-weight:800;margin:0 0 8px">In-App Experience</h2>
+        <p class="muted" style="margin:0 0 18px">Swipe through previews of the chat UI (tap images to open fullscreen).</p>
+
+        <div class="carousel" id="carousel" aria-roledescription="carousel">
+          <div class="slides" id="slides" role="list">
+            <div class="slide" role="listitem"><img src="screenshot.png" alt="App screenshot 1"></div>
+            <div class="slide" role="listitem"><img src="screenshot1.png" alt="App screenshot 2"></div>
+            <div class="slide" role="listitem"><img src="screenshot2.png" alt="App screenshot 3"></div>
+          </div>
+
+          <div class="carousel-controls" aria-hidden="true">
+            <div style="width:60px"></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="arrow" id="prev" aria-label="Previous slide">&#10094;</button>
+              <button class="arrow" id="next" aria-label="Next slide">&#10095;</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dots" id="dots" aria-hidden="true" style="margin-top:14px">
+          <div class="dot active" data-index="0"></div>
+          <div class="dot" data-index="1"></div>
+          <div class="dot" data-index="2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" style="padding:40px 0;border-top:1px solid rgba(255,255,255,0.02)">
+      <div class="container reveal">
+        <h3 style="margin:0;font-size:20px;font-weight:800">How it works</h3>
+        <p class="muted" style="margin-top:8px">Pick a companion, chat naturally, and manage memories — you decide what to save.</p>
+
+        <div class="how-grid">
+          <div class="card"><strong>1 — Choose</strong><div class="muted" style="margin-top:8px">Pick a personality that fits you.</div></div>
+          <div class="card"><strong>2 — Chat</strong><div class="muted" style="margin-top:8px">Say what's on your mind — naturally.</div></div>
+          <div class="card"><strong>3 — Manage</strong><div class="muted" style="margin-top:8px">Save or forget memories — you're in control.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" style="padding:40px 0">
+      <div class="container reveal">
+        <h3 style="margin:0;font-size:20px;font-weight:800">What people say</h3>
+        <p class="muted" style="margin-top:8px">Early users appreciate the warm tone and clarity.</p>
+
+        <div class="test-grid">
+          <div class="card"> <strong>Akash</strong><div class="muted" style="margin-top:8px">"Luvisa helped me calm down during a stressful night — felt heard and supported."</div></div>
+          <div class="card"> <strong>Rahul</strong><div class="muted" style="margin-top:8px">"The Coder gave me a short explanation that finally made recursion click."</div></div>
+          <div class="card"> <strong>Maya</strong><div class="muted" style="margin-top:8px">"Great simple UX and friendly tone. Looking forward to the assistant."</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT (HOME ONLY) -->
+    <section id="contact" style="padding:40px 0">
+      <div class="container reveal" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">
+        <div>
+          <h3 style="margin:0;font-weight:800">Contact</h3>
+          <p class="muted" style="margin-top:8px">Questions or feedback? Email: <a href="dhanush.business01@gmail.com" style="color:#ffd6e0">dhanush.business01@gmail.com</a></p>
+        </div>
+
+        <form onsubmit="handleContact(event)" style="display:flex;flex-direction:column;gap:8px">
+          <input name="name" required placeholder="Your name" style="padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#fff" />
+          <input name="email" required type="email" placeholder="Your email" style="padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#fff" />
+          <textarea name="message" required rows="4" placeholder="Message" style="padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#fff"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="cta" type="submit">Send message</button>
+            <button class="arrow" type="button" onclick="copyEmail()" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">Copy email</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div style="font-size:13px;color:var(--muted)">&copy; 2025 Friendix.ai</div>
+
+      <div style="display:flex;gap:16px;align-items:center">
+        <a class="footer-links" href="about.html">About</a>
+        <a class="footer-links" href="privacy.html">Privacy</a>
+        <a class="footer-links" href="terms.html">Terms</a>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <a class="social" href="https://instagram.com" target="_blank" aria-label="Instagram" rel="noopener">Instagram</a>
+        <a class="social" href="https://twitter.com" target="_blank" aria-label="Twitter" rel="noopener">Twitter</a>
+        <a class="social" href="https://linkedin.com" target="_blank" aria-label="LinkedIn" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()" role="dialog" aria-hidden="true" style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;z-index:80;background:linear-gradient(180deg,rgba(2,6,23,0.6),rgba(2,6,23,0.85))">
+    <img id="lightboxImg" src="" alt="Preview" style="max-width:92%;max-height:88%;border-radius:12px;box-shadow:0 40px 120px rgba(0,0,0,0.7)">
+  </div>
+
+  <script>
+    // Contact fallback (mailto)
+    function handleContact(e){
+      e.preventDefault();
+      const f = e.target;
+      const name = encodeURIComponent(f.name.value.trim());
+      const email = encodeURIComponent(f.email.value.trim());
+      const msg = encodeURIComponent(f.message.value.trim());
+      const subject = encodeURIComponent('Contact from ' + (name || email));
+      window.location.href = `mailto:hello@friendix.ai?subject=${subject}&body=Name:%20${name}%0AEmail:%20${email}%0A%0A${msg}`;
+    }
+    function copyEmail(){ navigator.clipboard && navigator.clipboard.writeText('hello@friendix.ai').then(()=>alert('Email copied')) }
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in-view'); });
+    }, { threshold: 0.16 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Carousel
+    (function(){
+      const slidesEl = document.getElementById('slides');
+      if(!slidesEl) return;
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const prev = document.getElementById('prev');
+      const next = document.getElementById('next');
+      const dots = Array.from(document.querySelectorAll('.dot'));
+      const total = slides.length;
+      let idx = 0;
+      let startX = 0;
+      let currentTranslate = 0;
+      let isDragging = false;
+
+      function update(){
+        slidesEl.style.transform = `translateX(${-idx*100}%)`;
+        dots.forEach(d=>d.classList.remove('active'));
+        if(dots[idx]) dots[idx].classList.add('active');
+      }
+      update();
+
+      prev && prev.addEventListener('click', ()=>{ idx = Math.max(0, idx-1); update(); });
+      next && next.addEventListener('click', ()=>{ idx = Math.min(total-1, idx+1); update(); });
+      dots.forEach(d => d.addEventListener('click', ()=>{ idx = parseInt(d.dataset.index); update(); }));
+
+      // touch
+      slidesEl.addEventListener('touchstart', (e)=>{ isDragging=true; startX = e.touches[0].clientX; currentTranslate = -idx*slidesEl.clientWidth; slidesEl.style.transition = 'none'; });
+      slidesEl.addEventListener('touchmove', (e)=>{ if(!isDragging) return; const dx = e.touches[0].clientX - startX; slidesEl.style.transform = `translateX(${currentTranslate + dx}px)`; });
+      slidesEl.addEventListener('touchend', (e)=>{ isDragging=false; slidesEl.style.transition = ''; const dx = (e.changedTouches[0].clientX - startX); if(Math.abs(dx) > 60){ if(dx < 0) idx = Math.min(total-1, idx+1); else idx = Math.max(0, idx-1); } update(); });
+
+      // mouse drag
+      let mouseDown=false, mouseStart=0;
+      slidesEl.addEventListener('mousedown', (e)=>{ mouseDown=true; mouseStart=e.clientX; slidesEl.style.transition='none'; });
+      window.addEventListener('mousemove', (e)=>{ if(!mouseDown) return; const dx = e.clientX - mouseStart; slidesEl.style.transform = `translateX(${ -idx*slidesEl.clientWidth + dx }px)`; });
+      window.addEventListener('mouseup', (e)=>{ if(!mouseDown) return; mouseDown=false; slidesEl.style.transition=''; const dx = e.clientX - mouseStart; if(Math.abs(dx) > 80){ if(dx < 0) idx = Math.min(total-1, idx+1); else idx = Math.max(0, idx-1); } update(); });
+
+      // lightbox open
+      document.querySelectorAll('.slide img').forEach(img=>{
+        img.addEventListener('click', (e)=>{
+          openLightbox(e.currentTarget.src);
+        });
+      });
+
+      // keyboard
+      window.addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowLeft'){ idx = Math.max(0, idx-1); update(); }
+        if(e.key === 'ArrowRight'){ idx = Math.min(total-1, idx+1); update(); }
+        if(e.key === 'Escape'){ closeLightbox(); }
+      });
+    })();
+
+    function openLightbox(src){
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      img.src = src;
+      lb.style.display = 'flex';
+      lb.setAttribute('aria-hidden', 'false');
+    }
+    function closeLightbox(){
+      const lb = document.getElementById('lightbox');
+      lb.style.display = 'none';
+      document.getElementById('lightboxImg').src = '';
+      lb.setAttribute('aria-hidden', 'true');
+    }
+
+    // Starfield + nebula parallax
+    (function(){
+      const canvas = document.getElementById('starfieldCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W = innerWidth, H = innerHeight;
+      let DPR = Math.min(2, window.devicePixelRatio || 1);
+      function resize(){ W = innerWidth; H = innerHeight; DPR = Math.min(2, window.devicePixelRatio || 1); canvas.width = W * DPR; canvas.height = H * DPR; canvas.style.width = W + 'px'; canvas.style.height = H + 'px'; ctx.setTransform(DPR,0,0,DPR,0,0); initStars(); }
+      window.addEventListener('resize', resize);
+
+      let stars = [], comets = [];
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 760;
+
+      function initStars(){
+        stars = [];
+        const density = isMobile ? 0.0008 : 0.0014;
+        const total = Math.max(40, Math.floor(W * H * density));
+        for(let i=0;i<total;i++){
+          stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.6+0.2, a: Math.random()*0.8+0.2, tw: Math.random()*0.03+0.006, depth: Math.random()*0.9+0.1 });
+        }
+      }
+      resize();
+
+      function maybeAddComet(){
+        if(isMobile) return;
+        if(Math.random() < 0.004 && comets.length < 1){
+          comets.push({ x:-80, y: Math.random()*H*0.6 + H*0.1, vx: 2.5 + Math.random()*1.8, life:0, max: 500 + Math.random()*800 });
+        }
+      }
+
+      let mx=0,my=0,px=0,py=0;
+      if(!isMobile){
+        window.addEventListener('mousemove', e=>{ mx = (e.clientX - W/2)/(W/2); my = (e.clientY - H/2)/(H/2); });
+      }
+
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+        for(const s of stars){
+          s.tw += 0.02;
+          const a = 0.2 + 0.8 * (0.5 + 0.5 * Math.sin(s.tw * 1.1));
+          const depthFactor = 1 + (1 - s.depth) * 0.6;
+          const ox = !isMobile ? mx * (8 * (1 - s.depth)) : 0;
+          const oy = !isMobile ? my * (6 * (1 - s.depth)) : 0;
+          ctx.fillStyle = `rgba(255,255,255,${Math.max(0.06, Math.min(0.95, s.a * a))})`;
+          ctx.fillRect(s.x + ox, s.y + oy, s.r * (0.9 + s.depth*0.9), s.r * (0.9 + s.depth*0.9));
+        }
+
+        for(let i=comets.length-1;i>=0;i--){
+          const c = comets[i];
+          c.x += c.vx; c.y += (c.vy||0);
+          c.life++;
+          const grd = ctx.createLinearGradient(c.x, c.y, c.x-120, c.y+24);
+          grd.addColorStop(0,'rgba(255,255,255,0.96)'); grd.addColorStop(0.4,'rgba(255,190,220,0.42)'); grd.addColorStop(1,'rgba(255,190,220,0)');
+          ctx.strokeStyle = grd; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x-120, c.y+24); ctx.stroke();
+          ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.arc(c.x, c.y, 2.6, 0, Math.PI*2); ctx.fill();
+          if(c.x > W+120 || c.life > c.max) comets.splice(i,1);
+        }
+
+        maybeAddComet();
+
+        // smooth parallax for nebula
+        px += (mx - px) * 0.06;
+        py += (my - py) * 0.06;
+        const neb = document.querySelector('.nebula');
+        if(neb) neb.style.transform = `translate3d(${px*12}px, ${py*8}px, 0) scale(1.01)`;
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // initial reveal + nav active highlight
+    window.addEventListener('load', ()=>{
+      document.querySelectorAll('.reveal').forEach((el,i)=> setTimeout(()=>el.classList.add('in-view'), 160 + i*80));
+      const current = location.pathname.split('/').pop() || 'index.html';
+      document.querySelectorAll('nav.links a').forEach(a=>{
+        try{
+          const href = a.getAttribute('href');
+          if(href && (href === current || (href.startsWith('#') && current === 'index.html')) ){
+            a.classList.add('active');
+          } else {
+            a.classList.remove('active');
+          }
+        }catch(e){}
+      });
+    });
+  </script>
+</body>
+</html>

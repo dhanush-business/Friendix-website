@@ -1,0 +1,12 @@
+{
+  "name": "Friendix.ai",
+  "short_name": "Friendix",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0716",
+  "theme_color": "#0b0716",
+  "icons": [
+    { "src": "/static/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
